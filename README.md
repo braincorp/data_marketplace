@@ -37,7 +37,7 @@ export AUTH_URL=https://dev-483595.okta.com/oauth2/default/v1/token
 ## Usage
 
 ```shell script
-python download_datasets.py --list --download --start-date 2020-01-07T07:57:13.000Z --end-date 2020-01-07T07:57:14.000Z --site SamsClub6235
+python samples/datasets.py --list --download --start-date 2020-01-07T07:57:13.000Z --end-date 2020-01-07T07:57:14.000Z --site SamsClub6235
 ```
 
 - start_date and end_date - specify a date range
