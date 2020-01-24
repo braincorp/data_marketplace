@@ -86,6 +86,7 @@ def main(opts):
     site = opts['site_name']
     list_available = opts['list_available']
     download_available = opts['download_available']
+    type = opts['type']
 
 
     hydrate_token()
@@ -94,7 +95,14 @@ def main(opts):
     if site:
         params['location'] = site
 
-    res = requests.get('https://shelfscanninginsights.azurewebsites.net/v1/datasets', params=params, headers={'Authorization': f'Bearer {token}'})
+    if type == 'filtered':
+        resource = 'datasets'
+    elif type == 'unfiltered':
+        resource = 'datasets-unfiltered'
+    else:
+        raise ValueError('unsupported type')
+
+    res = requests.get(f'https://shelfscanninginsights.azurewebsites.net/v1/{resource}', params=params, headers={'Authorization': f'Bearer {token}'})
     res.raise_for_status()
 
     datasets = list(filter(lambda d: dateutil.parser.parse(d['date']) >= start_date and dateutil.parser.parse(d['date']) <= end_date, res.json()))
@@ -121,6 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('--list', type=bool, default=False, nargs='?', const=True, help='list datasets satisfying criterion')
     parser.add_argument('--download', type=bool, default=False, nargs='?', const=True, help='download to current directory')
     parser.add_argument('--site', type=str, default=None, help='download to current directory')
+    parser.add_argument('--type', type=str, default='filtered', help='dataset type filtered or unfiltered')
 
     args = parser.parse_args()
 
@@ -133,12 +142,18 @@ if __name__ == '__main__':
     if not args.download and not args.list:
         raise ValueError('please select and option, --list,--download')
 
+    supported_types = ['filtered', 'unfiltered']
+
+    if args.type not in supported_types:
+        raise ValueError(f'invalid type parameter, {args.type} not {",".join(supported_types)}')
+
     opt = {
         'start_date': start,
         'end_date': end,
         'site_name': args.site,
         'list_available': args.list,
         'download_available': args.download,
+        'type': args.type,
     }
 
     main(opt)

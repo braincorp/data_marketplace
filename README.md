@@ -44,3 +44,4 @@ python samples/datasets.py --list --download --start-date 2020-01-07T07:57:13.00
 - site - specify the site you’d like to download or inspect
 - list - displays datasets that meet specified criteria in a table view
 - download - downloads all datasets  that match criteria
+- type - switches between the filtered and unfiltered dataset routes. Excepted values are `filtered`, `unfiltered`.
