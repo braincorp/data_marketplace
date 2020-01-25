@@ -4,9 +4,6 @@ Lists and Downloads datasets from the AI Marketplace Dataset API.
 Supports filtering from a data range and a specified site.
 
 requires python3.6+, pytz, python-dateutil, requests, clint, PrettyTable
-
-To run:
-python download_datasets.py --list --download --start-date 2020-01-07T07:57:13.000Z --end-date 2020-01-07T07:57:14.000Z --site SamsClub6235
 """
 
 import requests
