@@ -37,11 +37,11 @@ export AUTH_URL=https://dev-483595.okta.com/oauth2/default/v1/token
 ## Usage
 
 ```shell script
-python samples/datasets.py --list --download --start-date 2020-01-07T07:57:13.000Z --end-date 2020-01-07T07:57:14.000Z --site SamsClub6235
+python samples/datasets.py --list --download --start-date 2020-01-07T07:57:13.000Z --end-date 2020-01-07T07:57:14.000Z --site <SiteName>
 ```
 
-- start_date and end_date - specify a date range
-- site - specify the site you’d like to download or inspect
+- start_date and end_date - specify a date range. Optional
+- site - specify the site you’d like to download or inspect. Optional
 - list - displays datasets that meet specified criteria in a table view
-- download - downloads all datasets  that match criteria
-- type - switches between the filtered and unfiltered dataset routes. Excepted values are `filtered`, `unfiltered`.
+- download - downloads all datasets that match criteria
+- type - switches between the filtered and unfiltered dataset routes. Excepted values are `filtered`, `unfiltered`. Default value is `unfiltered`

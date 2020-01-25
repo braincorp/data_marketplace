@@ -129,7 +129,7 @@ if __name__ == '__main__':
     parser.add_argument('--list', type=bool, default=False, nargs='?', const=True, help='list datasets satisfying criterion')
     parser.add_argument('--download', type=bool, default=False, nargs='?', const=True, help='download to current directory')
     parser.add_argument('--site', type=str, default=None, help='download to current directory')
-    parser.add_argument('--type', type=str, default='filtered', help='dataset type filtered or unfiltered')
+    parser.add_argument('--type', type=str, default='unfiltered', help='dataset type filtered or unfiltered')
 
     args = parser.parse_args()
 
