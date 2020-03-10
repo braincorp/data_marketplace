@@ -127,11 +127,17 @@ if __name__ == '__main__':
     parser.add_argument('--download', type=bool, default=False, nargs='?', const=True, help='download to current directory')
     parser.add_argument('--site', type=str, default=None, help='download to current directory')
     parser.add_argument('--type', type=str, default='unfiltered', help='dataset type filtered or unfiltered')
+    parser.add_argument('--scope', type=str, default='partner', help='dataset type filtered or unfiltered')
 
     args = parser.parse_args()
 
     start = dateutil.parser.parse(args.start_date)
     end = dateutil.parser.parse(args.end_date)
+
+    if args.scope not in ['partner', 'customer']:
+        raise ValueError('not a valid scope')
+
+    token_payload['scope'] = args.scope
 
     if start >= end:
         raise ValueError('start date is greater then end date')
