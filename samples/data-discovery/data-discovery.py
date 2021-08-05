@@ -28,7 +28,7 @@ class DiscoveryRepository:
         res.raise_for_status()
         self.token = res.json()['access_token']
 
-    def query(self, site, start_date, end_date, labels=None, limit=None):
+    def query(self, site, start_date, end_date, labels=None, limit=None, sensors=None):
         print('running metadata query')
         url = f'https://shelfscanninginsights.azurewebsites.net/v1/site-images'
         params = {'siteName': site, 'startDate': start_date, 'endDate': end_date}
@@ -39,9 +39,12 @@ class DiscoveryRepository:
         if labels:
             params['labels'] = labels
 
+        if sensors:
+            params['sensors'] = sensors
+
         res = requests.get(url, params=params, headers=headers)
         res.raise_for_status()
-        return json.dumps(res.json(), indent=4)
+        return res.json()
 
     def discovery(self, site, start_date, end_date):
         print('running discovery query')
@@ -86,6 +89,8 @@ if __name__ == '__main__':
     if args.discovery:
         print(r.discovery(args.site, args.start_date, args.end_date))
     elif args.query:
-        print(r.query(args.site, args.start_date, args.end_date, args.labels, args.limit))
+        res = r.query(args.site, args.start_date, args.end_date, args.labels, args.limit, args.sensors)
+        print(json.dumps(res, indent=4))
+        print("count", len(res))
     else:
         raise ValueError("no selection made --discovery or --query")
