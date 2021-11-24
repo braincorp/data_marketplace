@@ -8,7 +8,7 @@ import pytz
 import requests
 from requests.auth import HTTPBasicAuth
 from clint.textui import progress
-
+import concurrent.futures
 
 class DiscoveryRepository:
     token_payload = {
@@ -60,6 +60,8 @@ class DiscoveryRepository:
         res.raise_for_status()
         return json.dumps(res.json(), indent=4)
 
+s = requests.Session()
+# requests.adapters.DEFAULT_RETRIES = 5
 
 def download(name, url):
     """
@@ -68,13 +70,13 @@ def download(name, url):
     :param url: The locator of the file.
     :return: None
     """
-    with requests.get(url, stream=True) as r:
+    with s.get(url, stream=True) as r:
         r.raise_for_status()
-        total_length = int(r.headers.get('content-length'))
         with open(name, 'wb') as f:
-            for chunk in progress.bar(r.iter_content(chunk_size=8192), expected_size=(total_length/8192) + 1):
+            for chunk in r.iter_content(chunk_size=8192):
                 if chunk: # filter out keep-alive new chunks
                     f.write(chunk)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='discover, list and download data')
@@ -107,22 +109,24 @@ if __name__ == '__main__':
         print(r.discovery(args.site, args.start_date, args.end_date))
     elif args.query:
         image_meta = r.query(args.site, args.start_date, args.end_date, args.labels, args.limit, args.sensors)
+        count = len(image_meta)
         serialized_meta = json.dumps(image_meta, indent=4)
         if args.download:
             print("requested download")
-            for datum in image_meta:
-                try:
-                    download(datum['name'], datum['href'])
-                except KeyboardInterrupt:
-                    raise
-                except Exception:
-                    print("error fetching may not have labels", datum)
-                    traceback.print_exc()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+                futures = {executor.submit(download, datum['name'], datum['href']) for datum in image_meta if len(datum['labels']) != 0}
+                for future in progress.bar(concurrent.futures.as_completed(futures), expected_size=len(futures)):
+                    try:
+                        future.result()
+                    except Exception:
+                        print("can't download image, may be missing labels")
+                        traceback.print_exc()
+                        raise
 
             with open('image_metadata.json', 'w') as meta_json:
                 meta_json.write(serialized_meta)
 
         print(serialized_meta)
-        print("count", len(image_meta))
+        print("count", count)
     else:
         raise ValueError("no selection made --discovery or --query")
