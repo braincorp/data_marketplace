@@ -1,11 +1,13 @@
 import argparse
 import json
 import os
+import traceback
 from datetime import datetime
 
 import pytz
 import requests
 from requests.auth import HTTPBasicAuth
+from clint.textui import progress
 
 
 class DiscoveryRepository:
@@ -59,6 +61,21 @@ class DiscoveryRepository:
         return json.dumps(res.json(), indent=4)
 
 
+def download(name, url):
+    """
+    Downloads file to current directory.
+    :param name: Name of the file
+    :param url: The locator of the file.
+    :return: None
+    """
+    with requests.get(url, stream=True) as r:
+        r.raise_for_status()
+        total_length = int(r.headers.get('content-length'))
+        with open(name, 'wb') as f:
+            for chunk in progress.bar(r.iter_content(chunk_size=8192), expected_size=(total_length/8192) + 1):
+                if chunk: # filter out keep-alive new chunks
+                    f.write(chunk)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='discover, list and download data')
     parser.add_argument('--start-date', type=str, required=True, default='1970-01-01T00:00:00.000Z', help='start date')
@@ -89,8 +106,23 @@ if __name__ == '__main__':
     if args.discovery:
         print(r.discovery(args.site, args.start_date, args.end_date))
     elif args.query:
-        res = r.query(args.site, args.start_date, args.end_date, args.labels, args.limit, args.sensors)
-        print(json.dumps(res, indent=4))
-        print("count", len(res))
+        image_meta = r.query(args.site, args.start_date, args.end_date, args.labels, args.limit, args.sensors)
+        serialized_meta = json.dumps(image_meta, indent=4)
+        if args.download:
+            print("requested download")
+            for datum in image_meta:
+                try:
+                    download(datum['name'], datum['href'])
+                except KeyboardInterrupt:
+                    raise
+                except Exception:
+                    print("error fetching may not have labels", datum)
+                    traceback.print_exc()
+
+            with open('image_metadata.json', 'w') as meta_json:
+                meta_json.write(serialized_meta)
+
+        print(serialized_meta)
+        print("count", len(image_meta))
     else:
         raise ValueError("no selection made --discovery or --query")
