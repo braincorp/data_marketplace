@@ -10,6 +10,9 @@ from requests.auth import HTTPBasicAuth
 from clint.textui import progress
 import concurrent.futures
 
+s = requests.Session()
+
+
 class DiscoveryRepository:
     token_payload = {
         'grant_type': 'client_credentials',
@@ -60,8 +63,6 @@ class DiscoveryRepository:
         res.raise_for_status()
         return json.dumps(res.json(), indent=4)
 
-s = requests.Session()
-# requests.adapters.DEFAULT_RETRIES = 5
 
 def download(name, url):
     """
